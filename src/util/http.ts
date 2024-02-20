@@ -1,4 +1,4 @@
-const get = async function (url: string) {
+export const get = async function (url: string) {
   const response = await fetch(url);
 
   if (!response.ok) {
