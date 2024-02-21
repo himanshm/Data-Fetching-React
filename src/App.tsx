@@ -22,15 +22,18 @@ function App() {
 
   useEffect(() => {
     const fetchPosts = async function () {
-      const data = await get('https://jsonplaceholder.typicode.com/posts');
+      const data = await get(
+        'https://jsonplaceholder.typicode.com/posts',
+        expectedResponseDataSchema
+      );
 
-      const parsedData = expectedResponseDataSchema.parse(data);
+      // const parsedData = expectedResponseDataSchema.parse(data);
 
       // No more type casting via "as" needed!
       // Instead, here, TypeScript "knows" that parsedData will be an array
       // full with objects as defined by the above schema
 
-      const blogPosts: BlogPost[] = parsedData.map((rawPost) => {
+      const blogPosts: BlogPost[] = data.map((rawPost) => {
         return {
           id: rawPost.id,
           title: rawPost.title,
