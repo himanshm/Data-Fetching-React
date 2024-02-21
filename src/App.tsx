@@ -1,30 +1,36 @@
 import { type ReactNode, useEffect, useState } from 'react';
+import { z } from 'zod';
 
 import BlogPosts, { type BlogPost } from './components/BlogPosts.tsx';
 import { get } from './util/http.ts';
 import fetchingImg from './assets/data-fetching.png';
 
-type RawDataBlogPost = {
-  id: number;
-  userId: number;
-  title: string;
-  body: string;
-};
+const rawDataBlogPostSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  title: z.string(),
+  body: z.string(),
+});
+
+// z.array() is a Zod method that creates a new schema based on another schema
+// as the name suggests, it's simply an array containing the expected objects
+
+const expectedResponseDataSchema = z.array(rawDataBlogPostSchema);
 
 function App() {
   const [fetchedPosts, setFetchedPosts] = useState<BlogPost[]>();
 
-  /* This get function here is marked as async and out of the box by default, async will ensure that this function wraps any data that you might be returning into a promise. So it will always yield a promise that will then eventually resolve to the data you are returning. Therefore, we actually need to wait for this promise to resolve, */
-
-  // the effect function shouldn't return a promise. Instead, if it does return anything at all, it should return such a cleanup function.
-
   useEffect(() => {
     const fetchPosts = async function () {
-      const data = (await get(
-        'https://jsonplaceholder.typicode.com/posts'
-      )) as RawDataBlogPost[];
+      const data = await get('https://jsonplaceholder.typicode.com/posts');
 
-      const blogPosts: BlogPost[] = data.map((rawPost) => {
+      const parsedData = expectedResponseDataSchema.parse(data);
+
+      // No more type casting via "as" needed!
+      // Instead, here, TypeScript "knows" that parsedData will be an array
+      // full with objects as defined by the above schema
+
+      const blogPosts: BlogPost[] = parsedData.map((rawPost) => {
         return {
           id: rawPost.id,
           title: rawPost.title,
